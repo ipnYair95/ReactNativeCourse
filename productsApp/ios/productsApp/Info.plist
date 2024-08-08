@@ -6,6 +6,12 @@
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>productsApp</string>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Select images</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Capture images</string>
+
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

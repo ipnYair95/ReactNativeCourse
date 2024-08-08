@@ -17,9 +17,43 @@ export const updateCreateProduct = (product: Partial<Product>) => {
 
 
 
-const preparareImages = (images: string[]) => {
+const preparareImages = async (images: string[]) => {
 
-    return images.map((image) => image.split('/').pop());
+    const fileImages = images.filter((image) => image.includes('file://'));
+
+    const currentImages = images.filter((image) => !image.includes('file://'));
+
+    if (fileImages.length > 0) {
+
+        const uploadPromises = fileImages.map((image) => uploadImage(image));
+
+        const uploadedImages = await Promise.all(uploadPromises);
+
+        currentImages.push(...uploadedImages);
+
+    }
+
+    return currentImages.map((image) => image.split('/').pop());
+
+}
+
+const uploadImage = async (imageFile: string) => {
+
+    const formData = new FormData();
+
+    formData.append('file', {
+        name: imageFile.split('/').pop(),
+        type: 'image/jpeg',
+        uri: imageFile
+    });
+
+    const { data } = await testloApi.post<{ image: string }>('/files/product', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+
+    return data.image;
 
 }
 
@@ -30,7 +64,7 @@ const updateProduct = async (product: Partial<Product>) => {
 
     try {
 
-        const checkImages = preparareImages(images);
+        const checkImages = await preparareImages(images);
 
         const { data } = await testloApi.patch(`/products/${id}`, {
             images: checkImages,
@@ -53,13 +87,13 @@ const updateProduct = async (product: Partial<Product>) => {
 
 }
 
-const createProduct = async (product: Partial<Product>) : Promise<Product> => {    
+const createProduct = async (product: Partial<Product>): Promise<Product> => {
 
     const { id, images = [], ...rest } = product;
 
     try {
 
-        const checkImages = preparareImages(images);
+        const checkImages = await preparareImages(images);
 
         const { data } = await testloApi.post(`/products`, {
             images: checkImages,
